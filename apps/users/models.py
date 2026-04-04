@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 
 phone_validator = RegexValidator(
-    regex=r'^\+998 \d{2} \d{3} \d{2} \d{2}$',
+    regex=r'^\+998\d{9}$',
     message="+998 xx xxx xx xx formatida kiriting"
 )
 
@@ -15,6 +15,7 @@ class User(AbstractUser):
         
     role = models.CharField(max_length=7, blank=True, default=RoleChoice.USER)
     phone = models.CharField(max_length=15, unique=True, validators=[phone_validator])
+    logo = models.ImageField(upload_to='media/user/user_logos/', blank=True, null=True)
     
     
 
