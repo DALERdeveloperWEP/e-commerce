@@ -22,3 +22,6 @@ class Product(models.Model):
 class Favorite(models.Model):
     user = models.ForeignKey(User, related_name='favorites', on_delete='CASCADE')
     product = models.ForeignKey(Product, related_name='favorites', on_delete='CASCADE')
+    
+    class Meta:
+        unique_together = ('user', 'product')
