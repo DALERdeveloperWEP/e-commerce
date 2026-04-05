@@ -295,3 +295,5 @@ pip-selfcheck.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,visualstudiocode,django
+/client_secret_2358723045-7eaqviti9gdji864u11dlvmcotcp1mvm.apps.googleusercontent.com.json
+/goog_auth_test.html
