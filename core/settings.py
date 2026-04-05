@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'apps.catalog',
     'apps.stores',
     'apps.reviews',
-    'apps.loyalty',
     'apps.content',
     
     'rest_framework',

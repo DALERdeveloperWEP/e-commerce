@@ -11,7 +11,7 @@ class StatusOrder(models.TextChoices):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, related_name='orders', on_delete='CASCADE')
+    user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=32)
     phone = models.CharField(max_length=15)
     address = models.CharField(max_length=64)
@@ -25,7 +25,7 @@ class Order(models.Model):
     
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='order_items', on_delete='CASCADE')
-    product = models.ForeignKey(Product, related_name='order_items', on_delete='CASCADE')
+    order = models.ForeignKey(Order, related_name='order_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
