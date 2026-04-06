@@ -3,6 +3,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from rest_framework.views import APIView, Request, Response
 from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
 
 from .models import User
 from .serializers import GoogleAuthSerializer, LoginSerializer, RegisterSerializer, VerifyOTPSerializer
@@ -75,3 +76,18 @@ class VerifyOTPView(APIView):
             email = serializser.validated_data['email']
             user = User.objects.filter(email=email).first()
             return Response(TokenService.generate(user))
+        
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request: Request):
+        user = request.user
+        return Response({
+            "email": user.email,
+            "name": user.first_name,
+            "role": user.role,
+            "is_seller": user.is_seller,
+            "phone": user.phone,
+            "logo": user.logo.url if user.logo else None,
+        })

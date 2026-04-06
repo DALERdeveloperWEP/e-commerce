@@ -12,7 +12,7 @@ class Product(models.Model):
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2000, blank=True)
     price = models.FloatField()
-    discount_price = models.FloatField(blank=True)
+    discount_price = models.FloatField(blank=True, null=True)
     image = models.ImageField(upload_to='media/order/')
     brand = models.CharField(max_length=128)
     country = models.CharField(max_length=128)
