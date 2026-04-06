@@ -16,6 +16,6 @@ class User(AbstractUser):
     role = models.CharField(max_length=7, blank=True, default=RoleChoice.USER)
     phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
     logo = models.ImageField(upload_to='media/user/user_logos/', blank=True, null=True)
-    
+    is_seller = models.BooleanField(default=False)
     
 

@@ -15,11 +15,11 @@ class GoogleAuthView(APIView):
         if serializer.is_valid(raise_exception=True):
             token = serializer.validated_data['token']
             
-            # try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID)            
-            # except ValueError as e:
-            #     print(e)
-            #     return Response({"error": "Invalid token"}, status=400)
+            try:
+                idinfo = id_token.verify_oauth2_token(token, requests.Request(), settings.GOOGLE_CLIENT_ID)            
+            except ValueError as e:
+                print(e)
+                return Response({"error": "Invalid token"}, status=400)
 
             user, created = User.objects.get_or_create(
                 email=idinfo['email'],
