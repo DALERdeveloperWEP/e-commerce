@@ -11,15 +11,24 @@ class Category(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2000, blank=True)
-    price = models.FloatField()
-    discount_price = models.FloatField(blank=True, null=True)
-    image = models.ImageField(upload_to='media/order/')
+    
+    regular_price = models.DecimalField(max_digits=10, decimal_places=2)
+    card_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discount_percent = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    
+    image = models.ImageField(upload_to='order/')
+    
     brand = models.CharField(max_length=128)
     country = models.CharField(max_length=128)
     weight = models.CharField(max_length=68)
     stock = models.IntegerField()
     is_available = models.BooleanField(default=False)
     
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, related_name='favorites', on_delete=models.CASCADE)

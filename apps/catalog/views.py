@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema
 
 from .models import Category, Product, Favorite 
 from .serializers import CategorySerailzer, ProductSerailzer, FavoritSerailzer
-from .permissions import IsSellerOrReadOnly, IsUserOrReadOnly
+from .permissions import IsSellerOrReadOnly, IsUserOrReadOnly, IsOwnerOrReadOnly
 
 @extend_schema(tags=['Catalog'])
 class CategoryViewSet(ModelViewSet):
@@ -26,4 +26,11 @@ class ProductViewSet(ModelViewSet):
 class FavoriteViewSet(ModelViewSet):
     serializer_class = FavoritSerailzer
     queryset = Favorite.objects.all()
-    permission_classes = [IsUserOrReadOnly]
+    permission_classes = [IsUserOrReadOnly, IsOwnerOrReadOnly]
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user).all()
+    

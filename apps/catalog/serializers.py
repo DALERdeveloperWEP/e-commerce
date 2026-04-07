@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
-
 from rest_framework import serializers
+
 from .models import Category, Product, Favorite 
 
 
@@ -19,6 +19,23 @@ class ProductSerailzer(ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+    
+    def validate(self, attrs):
+        regular_price = attrs['regular_price']
+        card_price = attrs['card_price']
+        discount_percent = attrs['discount_percent']
+        
+        if discount_percent < 0 or discount_percent > 100:
+            raise serializers.ValidationError(
+                {"discount_percent": "0 dan 100 gacha bo‘lishi kerak`"}
+            )
+        
+        if card_price > regular_price:
+            raise serializers.ValidationError(
+                {"card_price": "Card price regular price dan katta bo‘lishi mumkin emas"}
+            )
+            
+        return super().validate(attrs)
     
 
 

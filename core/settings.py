@@ -169,8 +169,9 @@ if DEBUG:
     STATIC_URL = 'static/'
     MEDIA_URL = 'media/'
 else:
-    MEDIA_ROOT = 'media/'
     STATIC_ROOT = 'static/'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 
