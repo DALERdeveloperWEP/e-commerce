@@ -32,5 +32,5 @@ class FavoriteViewSet(ModelViewSet):
         serializer.save(user=self.request.user)
         
     def get_queryset(self):
-        return Favorite.objects.filter(user=self.request.user).all()
+        return self.queryset.filter(user=self.request.user)
     
