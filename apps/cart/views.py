@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import CartItem, Cart
 from .serializers import CartItemSerializer
@@ -30,5 +31,5 @@ class CartItemViewSet(ModelViewSet):
             cart_item.save()
 
         serializer = self.get_serializer(cart_item)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
         
