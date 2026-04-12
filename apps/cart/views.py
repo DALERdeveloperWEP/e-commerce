@@ -1,6 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
 
 from .models import CartItem, Cart
 from .serializers import CartItemSerializer
@@ -8,7 +10,7 @@ from ..catalog.permissions import IsOwnerOrReadOnly, IsUserOrReadOnly
 
 
 class CartItemViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticated, IsUserOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsUserOrReadOnly]
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
     
@@ -32,4 +34,24 @@ class CartItemViewSet(ModelViewSet):
 
         serializer = self.get_serializer(cart_item)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def increase(self, request, pk=None):
+        item = self.get_object()
+        item.quantity += 1
+        item.save()
+        return Response(self.get_serializer(item).data)
+
+    @action(detail=True, methods=['post'])
+    def decrease(self, request, pk=None):
+        item = self.get_object()
+
+        if item.quantity > 1:
+            item.quantity -= 1
+            item.save()
+        else:
+            item.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(self.get_serializer(item).data)
         

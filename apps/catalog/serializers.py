@@ -44,5 +44,5 @@ class ProductSerailzer(ModelSerializer):
 class FavoritSerailzer(ModelSerializer):
     class Meta:
         model = Favorite
-        fields = ['product']
+        fields = ['id', 'product']
         read_only_fields = ['user']
