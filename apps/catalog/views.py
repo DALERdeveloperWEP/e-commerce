@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema
+from core.services import MyPagination
 
 from .models import Category, Product, Favorite 
 from .serializers import CategorySerailzer, ProductSerailzer, FavoritSerailzer
@@ -20,6 +21,7 @@ class ProductViewSet(ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = ProductSerailzer
     permission_classes = [IsSellerOrReadOnly]
+    pagination_class = MyPagination
 
 
 @extend_schema(tags=['Favorite'])

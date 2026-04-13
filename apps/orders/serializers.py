@@ -1,6 +1,8 @@
 from rest_framework import serializers
+from decouple import config
+
 from .models import Order, OrderItem
-from ..cart.models import CartItem, Cart
+from ..cart.models import CartItem
 
 class OrderSerializer(serializers.ModelSerializer):
     items = serializers.ListField(child=serializers.IntegerField(), write_only=True)
@@ -26,6 +28,19 @@ class OrderSerializer(serializers.ModelSerializer):
             if not CartItem.objects.filter(id=item_id).exists():
                 raise serializers.ValidationError(f"CartItem with id {item_id} does not exist.")
         
+
+        min_price = config("MIN_PRICE", cast=int)
+        
+        total = 0
+
+        for item in value:
+            total += item.product.price * item.quantity
+
+        if total < min_price:
+            raise serializers.ValidationError({
+                "total_price": f"Минимальная сумма заказа {min_price}р"
+            })
+            
         return value
     
     def create(self, validated_data):
@@ -47,8 +62,37 @@ class OrderSerializer(serializers.ModelSerializer):
             )
 
             total += item.product.price * item.quantity
-
+        
         order.total_price = total
         order.save()
 
         return order
+    
+
+
+
+class OrderCheckSerializer(serializers.Serializer):
+    items = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    
+    def validate_items(self, value):
+        
+        for item_id in value:
+            if not CartItem.objects.filter(id=item_id).exists():
+                raise serializers.ValidationError(f"CartItem with id {item_id} does not exist.")
+        
+
+        min_price = config("MIN_PRICE", cast=int)
+        
+        total = 0
+
+        for item in value:
+            total += item.product.price * item.quantity
+
+        if total < min_price:
+            raise serializers.ValidationError({
+                "total_price": f"Минимальная сумма заказа {min_price}р"
+            })
+            
+        return value

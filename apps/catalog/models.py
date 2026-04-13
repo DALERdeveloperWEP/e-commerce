@@ -4,14 +4,14 @@ from ..users.models import User
 
 class Category(models.Model):
     name = models.CharField(max_length=64)
-    image = models.ImageField(upload_to='media/catalog/')
+    image = models.ImageField(upload_to='catalog/')
     slug = models.SlugField()
     
 
 class Product(models.Model):
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2000, blank=True)
-    
+    2
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
     card_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discount_percent = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
