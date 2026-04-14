@@ -7,7 +7,7 @@ from rest_framework import status
 from decouple import config
 
 from apps.catalog.permissions import IsOwnerOrReadOnly, IsUserOrReadOnly
-from .models import Order, OrderItem
+from .models import Order
 from .serializers import OrderSerializer, OrderCheckSerializer
 from ..cart.models import CartItem
 

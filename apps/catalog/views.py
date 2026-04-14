@@ -29,6 +29,7 @@ class FavoriteViewSet(ModelViewSet):
     serializer_class = FavoritSerailzer
     queryset = Favorite.objects.all()
     permission_classes = [IsUserOrReadOnly, IsOwnerOrReadOnly]
+    pagination_class = MyPagination
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
