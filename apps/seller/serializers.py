@@ -1,48 +1,56 @@
 from django.utils.text import slugify
 from rest_framework import serializers
-
 from ..catalog.models import Category
 from .models import CategoryRequest
 
-class SellerCategoriesSerializer(serializers.Serializer):
+class SellerCategoriesSerializer(serializers.ModelSerializer):
+    slug = serializers.CharField(read_only=True)
+    status = serializers.CharField(required=False) 
+
     class Meta:
         model = CategoryRequest
         fields = ['id', 'name', 'image', 'slug', 'status']
         read_only_fields = ['id', 'slug']
-    
+
     def validate(self, attrs):
-        if attrs.get('name'):
-            if not Category.objects.filter(name=attrs.get('name')).exists():
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        if user and not getattr(user, 'is_seller', False):
+            raise serializers.ValidationError({"detail": "Only sellers can perform this action."})
+
+
+        name = attrs.get('name')
+        if name:
+            if Category.objects.filter(name=name).exists():
                 raise serializers.ValidationError({"name": "A category with this name already exists."})
+
+
+        if 'status' in attrs and attrs.get('status') != 'cancel':
+            raise serializers.ValidationError({"status": "Status must be 'cancel'."})
+
+        return attrs
+
+    def create(self, validated_data):
+
+        name = validated_data.get('name')
+        validated_data['slug'] = self._generate_unique_slug(name)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+
+        name = validated_data.get('name')
+        if name:
+            instance.slug = self._generate_unique_slug(name)
         
-        if not self.context['request'].user.is_seller:
-            raise serializers.ValidationError({"detail": "Only sellers can create category requests."})
-        
-        return super().validate(attrs)
-    
-    
-    def save(self, **kwargs):
-        base_slug = slugify(self.title)
+        return super().update(instance, validated_data)
+
+    def _generate_unique_slug(self, name):
+        base_slug = slugify(name)
         slug = base_slug
-        
         counter = 1
         
         while Category.objects.filter(slug=slug).exists():
             slug = f"{base_slug}-{counter}"
-            counter+=1
-            
-        self.slug = slug 
-        return super().save(**kwargs)
-    
-
-class CategoryRequestCancelSerializer(serializers.Serializer):
-    class Meta:
-        model = CategoryRequest
-        fields = ['id', 'name', 'image', 'slug', 'status']
-        read_only_fields = ['id', 'slug', 'image', 'name']
-        
-    def validate(self, attrs):
-        if attrs.get('status') != 'cancel':
-            raise serializers.ValidationError({"status": "Status must be 'cancel'."})
-        return super().validate(attrs)
-    
+            counter += 1
+        return slug
