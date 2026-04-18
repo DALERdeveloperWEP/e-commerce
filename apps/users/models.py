@@ -19,3 +19,52 @@ class User(AbstractUser):
     is_seller = models.BooleanField(default=False)
     
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    FullName = models.CharField(max_length=124, blank=True)
+    is_card = models.BooleanField(default=False)
+    gender = models.CharField(max_length=7, blank=True)
+    phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
+    cashback = models.FloatField(default=0)
+    
+
+
+class SellerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    FullName = models.CharField(max_length=124, blank=True)
+    gender = models.CharField(max_length=7, blank=True)
+    phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
+    
+
+    
+user = {
+  "email": str,
+  "first_name": str,
+  "last_name": str | None,
+  "role": "str",
+  "is_seller": bool,
+  "phone": None | str,
+  "logo": None | str,
+  "cashback": None | float, # Yoki umuman kelmasligi ham mumkin
+  "gender": None | str,
+  "is_card": bool, # Yoki umuman kelmasligi ham mumkin (sababi menagerni card qosholmaydi)
+}
+
+admin_response = {
+    "users": {
+        "first_name": str,
+        "last_name": str,
+        "phone": str,
+        "logo": str,
+        "gender": str,
+        "is_card": bool,
+    },
+    "seller": {
+        "first_name": str,
+        "last_name": str,
+        "phone": str,
+        "logo": str,
+        "gender": str,
+        # product kelmaydi sababi backend tomonlama code kopayib ketadi shuning uchun uni boshqa api dan olinadi 
+    }
+}

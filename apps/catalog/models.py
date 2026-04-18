@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..users.models import User
+from ..users.models import User, SellerProfile
 
 
 class Category(models.Model):
@@ -11,6 +11,9 @@ class Category(models.Model):
     
 
 class Product(models.Model):
+    seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, related_name='products') 
+    catgories = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2000, blank=True)
     slug = models.SlugField(unique=True)

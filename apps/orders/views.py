@@ -2,9 +2,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema
 from rest_framework import status
+
+from drf_spectacular.utils import extend_schema
+
 from decouple import config
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.catalog.permissions import IsOwnerOrReadOnly, IsUserOrReadOnly
 from .models import Order
@@ -14,6 +18,7 @@ from ..cart.models import CartItem
 
 class OrderViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsUserOrReadOnly, IsOwnerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     

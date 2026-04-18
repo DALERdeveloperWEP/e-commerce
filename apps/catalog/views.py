@@ -1,8 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.parsers import MultiPartParser, FormParser
-from drf_spectacular.utils import extend_schema
-from core.services import MyPagination
 
+from drf_spectacular.utils import extend_schema
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from core.services import MyPagination
 from .models import Category, Product, Favorite 
 from .serializers import CategorySerailzer, ProductSerailzer, FavoritSerailzer
 from .permissions import IsSellerOrReadOnly, IsUserOrReadOnly, IsOwnerOrReadOnly
@@ -13,6 +16,7 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerailzer
     queryset = Category.objects.all()
     permission_classes = [IsSellerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
 
 
 @extend_schema(tags=['Product'])
@@ -20,16 +24,18 @@ class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = ProductSerailzer
-    permission_classes = [IsSellerOrReadOnly]
     pagination_class = MyPagination
+    permission_classes = [IsSellerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
 
 
 @extend_schema(tags=['Favorite'])
 class FavoriteViewSet(ModelViewSet):
     serializer_class = FavoritSerailzer
     queryset = Favorite.objects.all()
-    permission_classes = [IsUserOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = MyPagination
+    permission_classes = [IsUserOrReadOnly, IsOwnerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

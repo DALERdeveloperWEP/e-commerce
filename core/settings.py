@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.stores',
     'apps.reviews',
     'apps.content',
+    'apps.seller',
     
     'rest_framework',
     'rest_framework_simplejwt',
