@@ -66,3 +66,5 @@ class CategoryRequestDetailView(APIView):
         
     def patch(self, request: Request, pk):
         return self.put(request, pk)
+    
+

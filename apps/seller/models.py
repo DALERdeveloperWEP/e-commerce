@@ -13,3 +13,7 @@ class CategoryRequest(models.Model):
     image = models.ImageField(upload_to='catalog/')
     slug = models.SlugField(unique=True)
     status = models.CharField(choices=CategoryRequestChoices.choices, default=CategoryRequestChoices.PENDING)
+    comment = models.CharField(max_length=500)
+    
+    def __str__(self):
+        return self.name

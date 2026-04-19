@@ -9,7 +9,7 @@ class SellerCategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CategoryRequest
-        fields = ['id', 'name', 'image', 'slug', 'status']
+        fields = ['id', 'name', 'image', 'slug', 'status', 'comment']
         read_only_fields = ['id', 'slug']
 
     def validate(self, attrs):

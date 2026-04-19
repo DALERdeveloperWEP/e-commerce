@@ -27,6 +27,8 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
     cashback = models.FloatField(default=0)
     
+    def __str__(self):
+        return self.FullName
 
 
 class SellerProfile(models.Model):
@@ -35,36 +37,7 @@ class SellerProfile(models.Model):
     gender = models.CharField(max_length=7, blank=True)
     phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
     
-
+    def __str__(self):
+        return self.FullName
     
-user = {
-  "email": str,
-  "first_name": str,
-  "last_name": str | None,
-  "role": "str",
-  "is_seller": bool,
-  "phone": None | str,
-  "logo": None | str,
-  "cashback": None | float, # Yoki umuman kelmasligi ham mumkin
-  "gender": None | str,
-  "is_card": bool, # Yoki umuman kelmasligi ham mumkin (sababi menagerni card qosholmaydi)
-}
 
-admin_response = {
-    "users": {
-        "first_name": str,
-        "last_name": str,
-        "phone": str,
-        "logo": str,
-        "gender": str,
-        "is_card": bool,
-    },
-    "seller": {
-        "first_name": str,
-        "last_name": str,
-        "phone": str,
-        "logo": str,
-        "gender": str,
-        # product kelmaydi sababi backend tomonlama code kopayib ketadi shuning uchun uni boshqa api dan olinadi 
-    }
-}
