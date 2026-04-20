@@ -14,8 +14,14 @@ def get_cart_items(user, ids):
     ).select_related('product')
 
 
-def calculate_total(cart_items):
-    return sum(i.product.price * i.quantity for i in cart_items)
+def calculate_total(cart_items, payment_method):
+    match payment_method:
+        case 'regular_price':
+            return sum(i.product.regular_price * i.quantity for i in cart_items)
+        case 'card_price':
+            return sum(i.product.card_price * i.quantity for i in cart_items)
+        case _:
+            return sum(i.product.regular_price * i.quantity for i in cart_items)
 
 
 class OrderItemsSerializer(serializers.ModelSerializer):
@@ -43,12 +49,18 @@ class OrderWriteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    payment_method = serializers.ChoiceField(
+        choices=['regular_price', 'card_price'], 
+        write_only=True, 
+        required=False,
+        default='regular_price'
+    )
 
     class Meta:
         model = Order
         fields = [
-            'full_name', 'phone', 'address', 'house', 
-            'apartment', 'comment', 'status', 'input_items'
+            'full_name', 'phone', 'address', 'house', 'apartment', 
+            'comment', 'status', 'input_items', 'payment_method'
         ]
         read_only_fields = ['status']
 
@@ -61,21 +73,27 @@ class OrderWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         item_ids = validated_data.pop('input_items')
         user = self.context['request'].user
+        payment_method = validated_data.pop('payment_method', 'regular_price')
         
         cart_items = get_cart_items(user, item_ids)
         if cart_items.count() != len(set(item_ids)):
             raise serializers.ValidationError("Ba'zi mahsulotlar savatchada topilmadi.")
 
-        total = calculate_total(cart_items)
+        total = calculate_total(cart_items, payment_method)
         if total < config('MIN_PRICE', cast=int):
             raise serializers.ValidationError(f"Minimal summa: {config('MIN_PRICE')}р")
 
         order = Order.objects.create(user=user, total_price=total, **validated_data)
         
         order_items = [
-            OrderItem(order=order, product=i.product, quantity=i.quantity, price=i.product.price)
-            for i in cart_items
+            OrderItem(
+                order=order, 
+                product=i.product, 
+                quantity=i.quantity, 
+                price=i.product.card_price if payment_method == 'card_price' else i.product.regular_price
+            ) for i in cart_items
         ]
+            
         OrderItem.objects.bulk_create(order_items)
         cart_items.delete()
         return order
@@ -97,23 +115,33 @@ class OrderCheckSerializer(serializers.Serializer):
     items = serializers.ListField(
         child=serializers.IntegerField()
     )
+    payment_method = serializers.ChoiceField(
+        choices=['regular_price', 'card_price'], 
+        write_only=True, 
+        required=False,
+        default='regular_price'
+    )
     
-    def validate_items(self, value):
+    def validate(self, attrs): 
+        items_ids = attrs.get('items')
+        payment_method = attrs.get('payment_method', 'regular_price')
         
-        cart_items = get_cart_items(self.context['request'].user, value)
+        cart_items = get_cart_items(self.context['request'].user, items_ids)
+        print('sdawduaytwr  adjio')
+        if cart_items.count() != len(set(items_ids)):
+            print(total, items_ids)
+            raise serializers.ValidationError({"items": "Ba'zi CartItem lar topilmadi"})
 
-        if set(cart_items.values_list('id', flat=True)) != set(value):
-            raise serializers.ValidationError("Ba'zi CartItem lar topilmadi")
-
+        total = calculate_total(cart_items, payment_method)
         min_price = config("MIN_PRICE", cast=int)
 
-        total = calculate_total(cart_items)
-        
-
-        if  total < min_price:
+        print(total, items_ids)
+        if total < min_price:
             raise serializers.ValidationError({
-                "total_price": f"Минимальная сумма заказа {min_price}р"
+                "total_price": f"Минимальная сумма заказа {min_price}р",
+                "current_total": total
             })
 
-        return value
+        attrs['total'] = total 
+        return attrs
     

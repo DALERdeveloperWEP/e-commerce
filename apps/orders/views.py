@@ -82,6 +82,8 @@ class OrderCheckView(APIView):
         
         items = serializer.validated_data['items']
         cart_items = get_cart_items(request.user, items)
-        total = calculate_total(cart_items)
+        total = calculate_total(cart_items, serializer.validated_data['payment_method'])
 
         return Response({"ok": True, "total": total})
+
+
