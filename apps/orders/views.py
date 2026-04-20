@@ -1,60 +1,87 @@
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import action
 from rest_framework import status
+
+from django.shortcuts import get_object_or_404
 
 from drf_spectacular.utils import extend_schema
 
-from decouple import config
-
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from apps.catalog.permissions import IsOwnerOrReadOnly, IsUserOrReadOnly
+from apps.catalog.permissions import IsOwnerOrReadOnly
 from .models import Order
-from .serializers import OrderSerializer, OrderCheckSerializer
-from ..cart.models import CartItem
+from .serializers import (
+    OrderReadSerializer, 
+    OrderWriteSerializer, 
+    OrderCheckSerializer, 
+    get_cart_items, 
+    calculate_total, 
+    OrderUpdateSerializer
+)
 
 
-class OrderViewSet(ModelViewSet):
-    permission_classes = [IsAuthenticated, IsUserOrReadOnly, IsOwnerOrReadOnly]
+class OrderListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    
-    def get_queryset(self):
-        return Response(self.queryset.filter(user=self.request.user))
-    
+
+    @extend_schema(responses={200: OrderReadSerializer(many=True)})
+    def get(self, request):
+        orders = Order.objects.filter(user=request.user).prefetch_related('order_items__product')
+        serializer = OrderReadSerializer(orders, many=True)
+        return Response(serializer.data)
+
     @extend_schema(
-        request=OrderCheckSerializer,
-        responses={200: OrderCheckSerializer}
+        request=OrderWriteSerializer,
+        responses={201: OrderReadSerializer}
     )
-    @action(detail=False, methods=['post'])
-    def check(self, request):
-        serializer = OrderCheckSerializer(data=request.data)
+    def post(self, request):
+        serializer = OrderWriteSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        
+        return Response(OrderReadSerializer(order).data, status=status.HTTP_201_CREATED)
+
+
+
+class OrderDetailUpdateView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
+
+    @extend_schema(responses={200: OrderReadSerializer})
+    def get(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+        serializer = OrderReadSerializer(order)
+        return Response(serializer.data)
+
+    @extend_schema(
+        request=OrderUpdateSerializer,
+        responses={200: OrderReadSerializer}
+    )
+    def patch(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+        
+        
+        serializer = OrderWriteSerializer(order, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(OrderReadSerializer(order).data)
+
+
+
+class OrderCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=OrderCheckSerializer, responses={200: OrderCheckSerializer})
+    def post(self, request):
+        serializer = OrderCheckSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         
         items = serializer.validated_data['items']
+        cart_items = get_cart_items(request.user, items)
+        total = calculate_total(cart_items)
 
-        cart_items = CartItem.objects.filter(
-            id__in=items,
-            cart__user=request.user
-        )
-
-        if not cart_items.exists():
-            return Response({
-                "error": "Cart bo‘sh"
-            }, status=400)
-
-        total = sum(item.product.price * item.quantity for item in cart_items)
-
-        if total < config('MIN_PRICE', cast=int):
-            return Response({
-                "error": f"Минимальная сумма заказа {config('MIN_PRICE', cast=int)}р",
-                "total": total
-            }, status=400)
-
-        return Response({
-            "ok": True,
-            "total": total
-        })
+        return Response({"ok": True, "total": total})

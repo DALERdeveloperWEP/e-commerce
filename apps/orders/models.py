@@ -18,8 +18,8 @@ class Order(models.Model):
     house = models.CharField(max_length=32)
     apartment = models.CharField(max_length=32)
     comment = models.CharField(max_length=500)
-    total_price = models.FloatField()
     status = models.CharField(max_length=20, choices=StatusOrder.choices, default=StatusOrder.PENDING)
+    total_price = models.FloatField()
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

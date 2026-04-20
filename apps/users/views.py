@@ -85,9 +85,14 @@ class UserProfileView(APIView):
         user = request.user
         return Response({
             "email": user.email,
-            "name": user.first_name,
+            "first_name": user.first_name,
+            "last_name": user.first_name,
             "role": user.role,
             "is_seller": user.is_seller,
             "phone": user.phone,
             "logo": user.logo.url if user.logo else None,
+            "cashback": 0,
+            "gender": None,
+            "is_card": False,
         })
+        
