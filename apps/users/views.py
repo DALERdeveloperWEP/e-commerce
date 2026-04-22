@@ -93,6 +93,6 @@ class UserProfileView(APIView):
             "logo": user.logo.url if user.logo else None,
             "cashback": 0,
             "gender": None,
-            "is_card": True,
+            "is_card": False,
         })
         

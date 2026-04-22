@@ -27,6 +27,7 @@ class OrderListCreateView(APIView):
 
     @extend_schema(responses={200: OrderReadSerializer(many=True)})
     def get(self, request):
+        print(f"DEBUG: Request user is -> {request.user.username} (ID: {request.user.id})")
         orders = Order.objects.filter(user=request.user).prefetch_related('order_items__product')
         serializer = OrderReadSerializer(orders, many=True)
         return Response(serializer.data)
@@ -64,7 +65,7 @@ class OrderDetailUpdateView(APIView):
         self.check_object_permissions(request, order)
         
         
-        serializer = OrderWriteSerializer(order, data=request.data, partial=True, context={'request': request})
+        serializer = OrderUpdateSerializer(order, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         

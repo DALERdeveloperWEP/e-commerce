@@ -97,6 +97,7 @@ class OrderWriteSerializer(serializers.ModelSerializer):
         OrderItem.objects.bulk_create(order_items)
         cart_items.delete()
         return order
+    
 
    
 
@@ -108,6 +109,20 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
             'full_name', 'phone', 'address', 'house', 
             'apartment', 'comment', 'status'
         ]
+    
+    def validate_status(self, value):
+        order_obj = self.instance
+        new_status = value
+        
+        if new_status != 'cancelled':
+            if order_obj.status == 'delivered':
+                raise serializers.ValidationError({"status": "Yetkazib berilgan buyurtmani bekor qilib bo'lmaydi!"})
+            else:
+                raise serializers.ValidationError({"status": 'Buyurtma Holati Faqat Bekor qilish mumkin'})
+        elif order_obj.status == 'cancelled':
+            raise serializers.ValidationError({"status": "Buyurtma Bekor qilin gandan keyin uni holatini ozgar tirib bolmaydi"})
+        
+        return value
 
 
 
@@ -122,25 +137,25 @@ class OrderCheckSerializer(serializers.Serializer):
         default='regular_price'
     )
     
+    
     def validate(self, attrs): 
         items_ids = attrs.get('items')
         payment_method = attrs.get('payment_method', 'regular_price')
         
         cart_items = get_cart_items(self.context['request'].user, items_ids)
-        print('sdawduaytwr  adjio')
         if cart_items.count() != len(set(items_ids)):
-            print(total, items_ids)
             raise serializers.ValidationError({"items": "Ba'zi CartItem lar topilmadi"})
 
         total = calculate_total(cart_items, payment_method)
         min_price = config("MIN_PRICE", cast=int)
 
-        print(total, items_ids)
         if total < min_price:
             raise serializers.ValidationError({
                 "total_price": f"Минимальная сумма заказа {min_price}р",
                 "current_total": total
             })
+            
+        
 
         attrs['total'] = total 
         return attrs
