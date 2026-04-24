@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 
 from .serializers import SellerCategoriesSerializer
 from .models import CategoryRequest
+from ..catalog.models import Category
 from ..users.models import SellerProfile
 from ..catalog.permissions import IsSellerOrReadOnly
 

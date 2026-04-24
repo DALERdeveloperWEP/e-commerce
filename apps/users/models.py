@@ -17,6 +17,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, unique=True, blank=True, null=True, validators=[phone_validator])
     logo = models.ImageField(upload_to='media/user/user_logos/', blank=True, null=True)
     is_seller = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     
 
 class UserProfile(models.Model):

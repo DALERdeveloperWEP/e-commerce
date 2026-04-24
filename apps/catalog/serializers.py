@@ -3,15 +3,34 @@ from rest_framework import serializers
 from django.utils.text import slugify
 
 from .models import Category, Product, Favorite 
+from ..seller.models import CategoryRequest
 
 
+
+class UniversalCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    image = serializers.ImageField()
+    slug = serializers.SlugField()
+    
 
 class CategorySerailzer(ModelSerializer):
-    image = serializers.ImageField()
+    image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = Category
         fields = ['id', 'name', 'image', 'slug']
         read_only_fields = ['id', 'slug']
+        
+    
+    def update(self, instance, validated_data):
+        get_category_request = CategoryRequest.objects.filter(id=validated_data.get('id', None)).first()
+        if get_category_request:
+            for attr, value in validated_data.items():
+                setattr(get_category_request, attr, value)
+            get_category_request.save()
+            return get_category_request
+        return super().update(instance, validated_data)
+
         
 
 
@@ -40,9 +59,7 @@ class ProductSerailzer(ModelSerializer):
                     "card_price": "Card price regular price dan katta bo‘lishi mumkin emas"
                 })
         
-        # if title is not None and Product.objects.filter(title=title).exists():
-        #     raise serializers.ValidationError({"title": f"{title} - Bunday nomli mahsulot mavjud"})
-            
+  
         return super().validate(attrs)
     
 
