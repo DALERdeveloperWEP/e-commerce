@@ -12,7 +12,24 @@ class UniversalCategorySerializer(serializers.Serializer):
     name = serializers.CharField()
     image = serializers.ImageField()
     slug = serializers.SlugField()
+    created_by_type = serializers.SerializerMethodField()
     
+    def get_created_by_type(self, obj):
+        if isinstance(obj, CategoryRequest):
+            return "seller"
+        return "admin"
+
+
+class CategoryUpdateSerializser(serializers.Serializer):
+    name = serializers.CharField(required=False)
+    image = serializers.ImageField(required=False)
+    slug = serializers.SlugField(read_only=False)
+    created_by_type = serializers.ChoiceField(choices=['admin', 'seller'])
+
+
+class CategoryDeleteSerializser(serializers.Serializer):
+    created_by_type = serializers.ChoiceField(choices=['admin', 'seller'], write_only=True)
+
 
 class CategorySerailzer(ModelSerializer):
     image = serializers.ImageField(required=False, allow_null=True)
@@ -23,14 +40,22 @@ class CategorySerailzer(ModelSerializer):
         
     
     def update(self, instance, validated_data):
-        get_category_request = CategoryRequest.objects.filter(id=validated_data.get('id', None)).first()
-        if get_category_request:
-            for attr, value in validated_data.items():
-                setattr(get_category_request, attr, value)
-            get_category_request.save()
-            return get_category_request
-        return super().update(instance, validated_data)
-
+        match validated_data['created_by_type']:
+            case 'seller':
+                get_category_request = CategoryRequest.objects.filter(id=validated_data.get('id', None)).first()
+                for attr, value in validated_data.items():
+                    setattr(get_category_request, attr, value)
+                get_category_request.save()
+                return get_category_request
+            case 'admin':
+                return super().update(instance, validated_data)
+            case _:
+                raise serializers.ValidationError({
+                    "created_by_type": "created_by_type must be either 'admin' or 'seller'"
+                })
+                
+    
+        
         
 
 
@@ -61,6 +86,8 @@ class ProductSerailzer(ModelSerializer):
         
   
         return super().validate(attrs)
+    
+    
     
 
     def save(self, **kwargs):

@@ -17,4 +17,4 @@ class CategoryRequest(models.Model):
     cancelled_by_role = models.CharField(blank=True, null=True, default='seller')
     
     def __str__(self):
-        return self.name
+        return f'{self.id} ------- {self.name}'
