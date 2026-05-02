@@ -42,14 +42,14 @@ class SellerCategoriesSerializer(serializers.ModelSerializer):
         name = validated_data.get('name')
         
         user = self.context['request'].user
+        
         if name:
             instance.slug = self._generate_unique_slug(name)
+        
         match validated_data.get('status', None):
             case 'pending':
                 pass
             case 'cancel':
-                # if instance.cancelled_by_role == 'admin' and 
-                # instance.cancelled_by_role == '' 
                 instance.status = 'cancel'
                 
             case 'completed':

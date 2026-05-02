@@ -28,9 +28,6 @@ class SellerDashboardView(APIView):
         today = date.today()
         yesterday = today - timedelta(days=1)
 
-        # =========================
-        # 🔥 ORDERS FILTER (FIXED RELATED NAME)
-        # =========================
         today_orders = Order.objects.filter(
             order_items__product__seller=seller,
             created_at=today
@@ -41,9 +38,6 @@ class SellerDashboardView(APIView):
             created_at=yesterday
         ).distinct()
 
-        # =========================
-        # 💰 BALANCE
-        # =========================
         today_balance = today_orders.aggregate(total=Sum("total_price"))["total"] or 0
         yesterday_balance = yesterday_orders.aggregate(total=Sum("total_price"))["total"] or 0
 
@@ -54,32 +48,20 @@ class SellerDashboardView(APIView):
                 2
             )
 
-        # =========================
-        # 📦 NEW ORDERS (ITEM COUNT)
-        # =========================
         new_orders = OrderItem.objects.filter(
             product__seller=seller,
             order__created_at=today
         ).aggregate(total=Sum("quantity"))["total"] or 0
 
-        # =========================
-        # 🛍 PRODUCTS
-        # =========================
         products = Product.objects.filter(seller=seller)
 
         total_products = products.count()
         low_stock_count = products.filter(stock__lte=5).count()
 
-        # =========================
-        # ⭐ RATING
-        # =========================
         rating = Review.objects.filter(
             product__seller=seller
         ).aggregate(avg=Avg("rating"))["avg"] or 0
 
-        # =========================
-        # 📦 RECENT ORDERS (FULL STRUCTURE)
-        # =========================
         recent_orders_qs = Order.objects.filter(
             order_items__product__seller=seller
         ).prefetch_related(
@@ -133,9 +115,6 @@ class SellerDashboardView(APIView):
                 "items": items
             })
 
-        # =========================
-        # 📊 WEEKLY SALES
-        # =========================
         last_7_days = today - timedelta(days=6)
 
         weekly_sales_qs = Order.objects.filter(
@@ -154,9 +133,6 @@ class SellerDashboardView(APIView):
             for item in weekly_sales_qs
         ]
 
-        # =========================
-        # 🧠 TASKS
-        # =========================
         tasks_qs = Tasks.objects.filter(seller=seller).order_by("-time")[:5]
 
         tasks = [
@@ -169,9 +145,6 @@ class SellerDashboardView(APIView):
             for t in tasks_qs
         ]
 
-        # =========================
-        # ✅ RESPONSE
-        # =========================
         return Response({
             "stats": {
                 "today_balance": today_balance,

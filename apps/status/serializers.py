@@ -1,9 +1,6 @@
 from rest_framework import serializers
 
 
-# =========================
-# 🟢 PRODUCT
-# =========================
 class ProductSwaggerSerializer(serializers.Serializer):
     id = serializers.IntegerField()
 
@@ -35,16 +32,11 @@ class ProductSwaggerSerializer(serializers.Serializer):
         if not obj.image:
             return None
 
-        # 🔥 FIX: absolute URL
         if request:
             return request.build_absolute_uri(obj.image.url)
 
         return obj.image.url
 
-
-# =========================
-# 🟢 ORDER ITEM
-# =========================
 class OrderItemSwaggerSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     product = ProductSwaggerSerializer()
@@ -52,9 +44,6 @@ class OrderItemSwaggerSerializer(serializers.Serializer):
     price = serializers.FloatField()
 
 
-# =========================
-# 🟢 ORDER
-# =========================
 class OrderSwaggerSerializer(serializers.Serializer):
     id = serializers.IntegerField()
 
@@ -74,9 +63,7 @@ class OrderSwaggerSerializer(serializers.Serializer):
     items = OrderItemSwaggerSerializer(many=True)
 
 
-# =========================
-# 🟢 STATS
-# =========================
+
 class StatsSwaggerSerializer(serializers.Serializer):
     today_balance = serializers.FloatField()
     today_growth_percent = serializers.FloatField()
@@ -91,17 +78,12 @@ class StatsSwaggerSerializer(serializers.Serializer):
     rating_growth = serializers.FloatField()
 
 
-# =========================
-# 🟢 WEEKLY SALES
-# =========================
 class WeeklySalesSwaggerSerializer(serializers.Serializer):
     day = serializers.CharField()
     total = serializers.FloatField()
 
 
-# =========================
-# 🟢 TASKS
-# =========================
+
 class TaskSwaggerSerializer(serializers.Serializer):
     title = serializers.CharField()
     time = serializers.CharField()
@@ -109,9 +91,7 @@ class TaskSwaggerSerializer(serializers.Serializer):
     priority = serializers.CharField()
 
 
-# =========================
-# 🔥 FULL DASHBOARD RESPONSE
-# =========================
+
 class SellerDashboardSwaggerSerializer(serializers.Serializer):
     stats = StatsSwaggerSerializer()
     recent_orders = OrderSwaggerSerializer(many=True)
